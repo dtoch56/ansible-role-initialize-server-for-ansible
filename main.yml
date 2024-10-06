@@ -1,0 +1,12 @@
+---
+- name: Test role
+  hosts: 127.0.0.1
+  connection: local
+  become: true
+
+  vars_files:
+    - defaults/main.yml
+
+  tasks:
+    - name: Main task
+      ansible.builtin.include_tasks: tasks/main.yml

@@ -1,0 +1,26 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
+      changed_when: false
+      when: ansible_os_family == 'Debian'
+
+    - name: Install openssh-server
+      ansible.builtin.package:
+        state: present
+        name: openssh-server
+
+    - name: Install openssh-client
+      ansible.builtin.package:
+        state: present
+        name: openssh-server
+      when: ansible_os_family == 'Debian'
+
+  roles:
+    - role: "dtoch56.initialize_server_for_ansible"

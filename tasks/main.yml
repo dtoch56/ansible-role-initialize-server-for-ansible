@@ -1,0 +1,115 @@
+---
+- name: Prepare Ansible user on remote host
+  hosts: 127.0.0.1
+  connection: local
+
+  vars_prompt:
+    - name: ServerIp
+      prompt: Server IP
+      private: false
+    - name: ServerPort
+      prompt: Server SSH port
+      default: 22
+      private: false
+    - name: ServerUser
+      prompt: Username
+      default: root
+      private: false
+    - name: ServerPassword
+      prompt: Password
+      default:
+      private: true
+    - name: PublicKey
+      prompt: SSH public key path
+      default: ~/.ssh/id_ed25519.pub
+      private: false
+
+  tasks:
+    - name: Add host server
+      ansible.builtin.add_host:
+        name: "{{ ServerIp }}:{{ ServerPort }}"
+        ansible_ssh_user: "{{ ServerUser }}"
+        ansible_ssh_password: "{{ ServerPassword }}"
+        ansible_ssh_private_key_file: "{{ PublicKey }}"
+        group: added_ansible_host
+
+- name: Prepare Ansible user on remote host
+  hosts: added_ansible_host
+  connection: paramiko
+
+  vars_prompt:
+    - name: "Bastion"
+      prompt: "Bastion?"
+      default: false
+      private: false
+
+  tasks:
+    - debug:
+        var: Bastion
+
+    - name: Update apt repositories
+      ansible.builtin.apt:
+        update_cache: true
+        force_apt_get: true
+        cache_valid_time: 86400
+
+    - name: Install sudo
+      ansible.builtin.apt:
+        name: sudo
+        update_cache: true
+
+    - name: Make sure we have a 'sudo' group
+      group:
+        name: sudo
+        state: present
+
+    - name: "Add group '{{ ansible_user.group.name }}'"
+      group:
+        name: "{{ ansible_user.group.name }}"
+        gid: "{{ ansible_user.group.id }}"
+        state: present
+
+    - name: "Add the user '{{ ansible_user.user.name }}'"
+      ansible.builtin.user:
+        name: "{{ ansible_user.user.name }}"
+        comment: Ansible user
+        uid: "{{ ansible_user.user.id }}"
+        group: "{{ ansible_user.group.name }}"
+        groups: sudo
+        append: true
+        shell: /bin/bash
+        create_home: true
+        home: "{{ ansible_user.home }}"
+
+    - name: Create .ssh directory
+      ansible.builtin.file:
+        path: "{{ ansible_user.home }}/.ssh"
+        state: directory
+        owner: "{{ ansible_user.user.name }}"
+        group: "{{ ansible_user.group.name }}"
+        mode: '0700'
+
+    - name: "Set authorized key for '{{ ansible_user.user.name }}' user"
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user.user.name }}"
+        state: present
+        key: "{{ lookup('file', 'vaults/bastion_public_keys.yml') }}"
+        exclusive: true
+      when: Bastion|default(false)|bool == true
+
+    - name: Copy ssh private key
+      ansible.builtin.copy:
+        src: files/.ssh/id_ed25519
+        dest: "{{ ansible_user.home }}/.ssh/id_ed25519"
+        owner: "{{ ansible_user.user.name }}"
+        group: "{{ ansible_user.group.name }}"
+        mode: '0600'
+      when: Bastion|default(false)|bool == true
+
+    - name: "Allow {{ ansible_user.user.name }} user to have passwordless sudo"
+      ansible.builtin.lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: "^%{{ ansible_user.user.name }}"
+        line: "% {{ ansible_user.user.name }} ALL=(ALL:ALL) NOPASSWD: ALL"
+        validate: visudo -cf %s

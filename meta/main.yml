@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  author: dtoch56
+  role_name: initialize_server_for_ansible
+  description: Initialize server for Ansible
+  license: MIT
+  min_ansible_version: '2.1'
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - ansible
+
+dependencies:
+  - role: dtoch56.ssh
