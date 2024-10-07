@@ -1,14 +1,2 @@
 ---
-ssh_packages: openssh-server
-
-ssh_key_types: ed25519
-
-ssh_run_directory: /run/sshd
-
-_ssh_service:
-  default: sshd
-  Debian-bullseye: ssh
-  Ubuntu-19: ssh
-  Ubuntu-20: ssh
-
-ssh_service: "{{ _ssh_service[ansible_distribution ~ '-' ~ ansible_distribution_release] | default(_ssh_service['default'] ) }}"
+ansible_user_home: "/home/{{ ansible_user_user_name }}"

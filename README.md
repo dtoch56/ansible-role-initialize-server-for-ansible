@@ -17,14 +17,13 @@ Role Variables
 
 Available variables are listed below, along with default values (see defaults/main.yml):
 
-| Variable                     | Description            | Default     |
-|------------------------------|:-----------------------|:------------|
-| ansible_user                 |                        |             |
-| ansible_user.home            | Home directory         | /home/ansbl |
-| ansible_user.home.user.name  | User name              | ansbl       |
-| ansible_user.home.user.id    | User ID (UID)          | 990         |
-| ansible_user.home.group.name | Primary group name     | ansbl       |
-| ansible_user.home.group.id   | Primary group id (GID) | 990         |
+| Variable                | Description            | Default     |
+|-------------------------|:-----------------------|:------------|
+| ansible_user_user_home  | Home directory         | /home/ansbl |
+| ansible_user_user_name  | User name              | ansbl       |
+| ansible_user_user_id    | User ID (UID)          | 990         |
+| ansible_user_group_name | Primary group name     | ansbl       |
+| ansible_user_group_id   | Primary group id (GID) | 990         |
 
 Dependencies
 ------------

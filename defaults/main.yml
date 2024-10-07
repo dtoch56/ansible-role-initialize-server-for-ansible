@@ -1,9 +1,6 @@
 ---
-ansible_user:
-  home: "/home/{{ ansible_user.user.name }}"
-  user:
-    name: "ansbl"
-    id: 990
-  group:
-    name: "ansbl"
-    id: 990
+ansible_user_user_home: "/home/{{ ansible_user_user_name }}"
+ansible_user_user_name: "ansbl"
+ansible_user_user_id: 990
+ansible_user_group_name: "ansbl"
+ansible_user_group_id: 990
